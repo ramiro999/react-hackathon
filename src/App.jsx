@@ -1,6 +1,6 @@
-
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import SimulationPay from './components/SimulationPay';
+import SimulationPayPSE from './components/SimulationPayPSE';
+import SimulationPayFC from './components/SimulationPayFC';
 
 function App() {
   return (
@@ -9,8 +9,8 @@ function App() {
     <Router>
       <div>
         <Routes>
-          <Route path="/simulacion-pago" element={<SimulationPay />} />
-          
+          <Route path="/simulacion-pago-pse" element={<SimulationPayPSE />} />
+          <Route path="/simulacion-pago-fc" element={<SimulationPayFC />} />
         </Routes>
       </div>
     </Router>
