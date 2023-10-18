@@ -10,7 +10,7 @@ function App() {
       <div>
         <Routes>
           <Route path="/simulacion-pago" element={<SimulationPay />} />
-          {/* Otras rutas y elementos */}
+          
         </Routes>
       </div>
     </Router>
