@@ -3,6 +3,7 @@ import CardComponent from "./CardComponent";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useEffect } from "react";
 
 export default function SimulationPayPSE() {
   const {
@@ -12,6 +13,22 @@ export default function SimulationPayPSE() {
   } = useForm();
 
   const [allFieldsValid, setAllFieldsValid] = useState(false);
+  const [monto, setMonto] = useState("");
+
+  useEffect(() => {
+    // Realiza una petición a una API
+    fetch(
+      "https://fcpay-production.up.railway.app/docs#/default/create_payment_token_token_pay_post",
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => setMonto(data));
+  }, []);
 
   const onSubmit = (data) => {
     console.log(data);
@@ -24,7 +41,7 @@ export default function SimulationPayPSE() {
   };
 
   const handleChange = () => {
-    navigate("/pago-realizado");
+    navigate("/simulacion-pago-pse");
   };
 
   const handleFieldValidation = () => {
@@ -39,12 +56,14 @@ export default function SimulationPayPSE() {
         <h1 className="text-2xl text-center text-white bg-green-700 font-bold mb-4 rounded">
           Pagos PSE
         </h1>
-        <form onSubmit={handleSubmit((data) => {
-          onSubmit(data);
-          if (allFieldsValid) {
-            handleChange();
-          }
-        })}>
+        <form
+          onSubmit={handleSubmit((data) => {
+            onSubmit(data);
+            if (allFieldsValid) {
+              handleChange();
+            }
+          })}
+        >
           <div className="mb-4">
             <label htmlFor="monto" className="block text-gray-600">
               Monto:
@@ -52,11 +71,13 @@ export default function SimulationPayPSE() {
             <Controller
               name="monto"
               control={control}
-              defaultValue=""
+              defaultValue={monto}
               render={({ field }) => (
                 <input
                   {...field}
                   type="number"
+                  step={0}
+                  min={0}
                   className="w-full p-2 border rounded"
                   onBlur={handleFieldValidation}
                 />
@@ -75,7 +96,9 @@ export default function SimulationPayPSE() {
               render={({ field }) => (
                 <input
                   {...field}
-                  type="number"
+                  type="text"
+                  pattern="[0-9]+"
+                  maxLength={16}
                   className="w-full p-2 border rounded"
                   onBlur={handleFieldValidation}
                 />
@@ -113,7 +136,9 @@ export default function SimulationPayPSE() {
               render={({ field }) => (
                 <input
                   {...field}
-                  type="number"
+                  type="text"
+                  pattern="[0-9]+"
+                  maxLength={3}
                   className="w-full p-2 border rounded"
                   onBlur={handleFieldValidation}
                 />
@@ -122,9 +147,12 @@ export default function SimulationPayPSE() {
             {errors.cvv && <p className="text-red-500">Campo requerido</p>}
           </div>
           <div className="recaptcha mx-10 mb-5">
-            <ReCAPTCHA sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o" onChange={onChange} />
+            <ReCAPTCHA
+              sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o"
+              onChange={onChange}
+            />
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-green-700 hover-bg-green-400 text-white font-bold py-2 px-4 rounded"
@@ -138,4 +166,3 @@ export default function SimulationPayPSE() {
     </CardComponent>
   );
 }
-
