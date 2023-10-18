@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation  } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
 
@@ -15,40 +15,68 @@ export default function SimulationPayPSE() {
   const [allFieldsValid, setAllFieldsValid] = useState(false);
   const [monto, setMonto] = useState("");
 
-  useEffect(() => {
-    // Realiza una petición a una API
-    fetch(
-      "https://fcpay-production.up.railway.app/docs#/default/create_payment_token_token_pay_post",
-      {
+  const myParam = useLocation().search;
+  const cuentaID= new URLSearchParams(myParam).get("cuentaid");
+  console.log(cuentaID)
+
+  async function requestPaymentToken(confirm, monto) {
+    const response = await fetch("https://fcpay-production.up.railway.app/token-pay", {
+        method: "POST",
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
+            "Content-Type": "application/json"
         },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => setMonto(data));
-  }, []);
+        body: JSON.stringify({
+            confirm: confirm,
+            monto: monto
+        })
+    });
 
-  const onSubmit = (data) => {
-    console.log(data);
-  };
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
-  const navigate = useNavigate();
+    return await response.json();
+  }
 
-  const onChange = (value) => {
-    console.log("Captcha value:", value);
-  };
+  async function makePayment(token, cuenta_id, monto, ip) {
+    console.log(String(token))
+    const response = await fetch("https://fcpay-production.up.railway.app/pay", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            token: String(token),
+            cuenta_id: Number(cuenta_id),
+            monto: Number(monto),
+            ip: ip
+        })
+    });
 
-  const handleChange = () => {
-    navigate("/simulacion-pago-pse");
-  };
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
 
   const handleFieldValidation = () => {
     // Verificar si todos los campos son válidos
     const isValid = Object.keys(errors).length === 0;
     setAllFieldsValid(isValid);
   };
+  
+
+  const onsubmit = (data,e) => {
+    e.preventDefault();
+    requestPaymentToken(true, data.monto).then((res) => {
+      makePayment(res['token'], cuentaID, data.monto, "").then((response) => {
+        console.log(response);
+      });
+    });
+  }
+
 
   return (
     <CardComponent>
@@ -57,13 +85,9 @@ export default function SimulationPayPSE() {
           Pagos PSE
         </h1>
         <form
-          onSubmit={handleSubmit((data) => {
-            onSubmit(data);
-            if (allFieldsValid) {
-              handleChange();
-            }
-          })}
-        >
+          onSubmit= {
+            handleSubmit(onsubmit)
+        }>
           <div className="mb-4">
             <label htmlFor="monto" className="block text-gray-600">
               Monto:
@@ -149,14 +173,12 @@ export default function SimulationPayPSE() {
           <div className="recaptcha mx-10 mb-5">
             <ReCAPTCHA
               sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o"
-              onChange={onChange}
             />
           </div>
 
           <button
             type="submit"
             className="w-full bg-green-700 hover-bg-green-400 text-white font-bold py-2 px-4 rounded"
-            onClick={handleChange}
             disabled={!allFieldsValid}
           >
             Realizar Pago
