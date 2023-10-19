@@ -64,7 +64,7 @@ export const Captcha = () => {
               type="submit"
               onClick={matchCaptcha}
             >
-              Submit
+              Validar
             </Button>
             {success && (
               <div style={{ color: "green", marginTop: "10px" }}>

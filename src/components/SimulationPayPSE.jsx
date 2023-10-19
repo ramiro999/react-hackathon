@@ -1,10 +1,10 @@
 import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
 import Swal from "sweetalert2";
-import ReCAPTCHA from "react-google-recaptcha";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/logo_extendido.jpeg";
+import { Captcha } from "./Captcha";
 
 export default function SimulationPayPSE() {
   const {
@@ -198,8 +198,9 @@ export default function SimulationPayPSE() {
             {errors.cvv && <p className="text-red-500">Campo requerido</p>}
           </div>
           
-          <div className="recaptcha mx-10 mb-5">
-            <ReCAPTCHA sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o" />
+          <div className="mb-4 flex justify-center">
+            
+            <Captcha />
           </div>
 
           <button
