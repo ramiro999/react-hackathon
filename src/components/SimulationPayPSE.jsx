@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
-//import { useEffect } from "react";
 import logo from "../assets/img/logo_extendido.jpeg";
 
 export default function SimulationPayPSE() {
@@ -15,7 +14,7 @@ export default function SimulationPayPSE() {
   } = useForm();
 
   const [allFieldsValid, setAllFieldsValid] = useState(false);
-  const [monto, setMonto] = useState("");
+  //const [monto, setMonto] = useState("");
 
   const myParam = useLocation().search;
   const cuentaID = new URLSearchParams(myParam).get("cuentaid");
@@ -198,6 +197,7 @@ export default function SimulationPayPSE() {
             />
             {errors.cvv && <p className="text-red-500">Campo requerido</p>}
           </div>
+          
           <div className="recaptcha mx-10 mb-5">
             <ReCAPTCHA sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o" />
           </div>
