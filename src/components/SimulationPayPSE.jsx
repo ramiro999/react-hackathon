@@ -2,9 +2,9 @@ import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
 import Swal from "sweetalert2";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useState } from "react";
-import { useEffect } from "react";
+//import { useEffect } from "react";
 import logo from "../assets/img/logo_extendido.jpeg";
 
 export default function SimulationPayPSE() {
@@ -123,7 +123,7 @@ export default function SimulationPayPSE() {
             <Controller
               name="monto"
               control={control}
-              defaultValue={monto}
+
               render={({ field }) => (
                 <input
                   {...field}

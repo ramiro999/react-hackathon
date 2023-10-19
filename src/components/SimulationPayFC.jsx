@@ -2,7 +2,7 @@ import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
 import Swal from 'sweetalert2';
 import ReCAPTCHA from "react-google-recaptcha";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/logo_extendido.jpeg";
 
@@ -15,19 +15,57 @@ export default function SimulationPayFC() {
 
   const [allFieldsValid, setAllFieldsValid] = useState(false);
 
-  const onSubmit = (data) => {
-    console.log(data);
-  };
+  const myParam = useLocation().search;
+  const cuentaID = new URLSearchParams(myParam).get("cuentaid");
+  console.log(cuentaID);
 
-  const onChange = (value) => {
-    console.log("Captcha value:", value);
-  };
+  async function requestPaymentToken(confirm, monto) {
+    const response = await fetch(
+      "https://fcpay-production.up.railway.app/token-pay",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          confirm: confirm,
+          monto: monto,
+        }),
+      }
+    );
 
-  const handleChange = () => {
-    navigate("/simulacion-pago-fc");
+    if (!response.ok) { 
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    return await response.json();
   }
 
-  const navigate = useNavigate();
+  async function makePayment(token, cuenta_id, monto, ip) {
+    console.log(String(token));
+    const response = await fetch(
+      "https://fcpay-production.up.railway.app/pay",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: String(token),
+          cuenta_id: Number(cuenta_id),
+          monto: Number(monto),
+          ip: ip,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    return await response.json();
+  }
+
 
   const handleFieldValidation = () => {
     // Verificar si todos los campos son válidos
@@ -35,49 +73,50 @@ export default function SimulationPayFC() {
     setAllFieldsValid(isValid);
   };
 
-  const handlePayment = () => {
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "¿Deseas realizar el pago?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí",
-      cancelButtonText: "No",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setTimeout(() => {
-        Swal.fire({
-          title: "¡Pago realizado!",
-          text: "El pago se realizó correctamente",
-          icon: "success",
-          confirmButtonText: "Aceptar",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = "/simulacion-pago-fc";
-          }
-        });
-      }, 1500);
-    }
+  const onsubmit = (data, e) => {
+    e.preventDefault();
+    requestPaymentToken(true, data.montoFC).then((res) => {
+      makePayment(res["token"], cuentaID, data.montoFC, "").then((response) => {
+        console.log(response);
+          Swal.fire({
+            title: "¿Estás seguro?",
+            text: "¿Deseas realizar el pago?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí",
+            cancelButtonText: "No",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              setTimeout(() => {
+                Swal.fire({
+                  title: "¡Pago realizado!",
+                  text: "El pago se realizó correctamente",
+                  icon: "success",
+                  confirmButtonText: "Aceptar",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    window.location.href = "/simulacion-pago-fc";
+                  }
+                });
+              }, 1500);
+            }
+          });
+      });
     });
-  }
+  };
 
   return (
     <CardComponent>
       <div className="max-w-md mx-auto p-4 bg-white rounded shadow-md">
-        <div className="mb-3 flex justify-center">
+      <div className="mb-3 flex justify-center">
           <img src={logo} width="100" height="100"  />{" "}
         </div>
         <h1 className="text-2xl text-center text-white bg-green-700 font-bold mb-4 rounded">
           Pagos FC
         </h1>
-        <form onSubmit={handleSubmit((data) => {
-            onSubmit(data);
-            if (allFieldsValid) {
-              handleChange();
-            }
-          })}>
+        <form onSubmit={handleSubmit(onsubmit)}>
           <div className="mb-4">
-            <label htmlFor="monto" className="block text-green-600">
+            <label htmlFor="monto" className="block text-gray-600">
               Monto:
             </label>
             <Controller
@@ -161,15 +200,13 @@ export default function SimulationPayFC() {
           <div className="recaptcha mx-10 mb-5">
             <ReCAPTCHA
               sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o"
-              onChange={onChange}
             />
           </div>
 
           <button
             type="submit"
             className="w-full bg-green-700 hover:bg-green-400 text-white font-bold py-2 px-4 rounded"
-            disabled={!allFieldsValid}
-            onClick={handlePayment}      
+            disabled={!allFieldsValid}   
           >
             Realizar Pago
           </button>
