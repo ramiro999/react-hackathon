@@ -78,29 +78,28 @@ export default function SimulationPayPSE() {
     requestPaymentToken(true, data.monto).then((res) => {
       makePayment(res["token"], cuentaID, data.monto, "").then((response) => {
         console.log(response);
-          swal.fire({
-            title: "¿Estás seguro?",
-            text: "¿Deseas realizar el pago?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí",
-            cancelButtonText: "No",
-          }).then((result) => {
-            if (result.isConfirmed) {
+        swal({
+          title: "¿Estás seguro?",
+          text: "¿Deseas realizar el pago?",
+          icon: "warning",
+          buttons: ["No", "Sí"],
+          dangerMode: true,
+      })
+      .then((willPay) => {
+          if (willPay) {
               setTimeout(() => {
-                swal.fire({
-                  title: "¡Pago realizado!",
-                  text: "El pago se realizó correctamente",
-                  icon: "success",
-                  confirmButtonText: "Aceptar",
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    window.location.href = "/simulacion-pago-pse";
-                  }
-                });
+                  swal({
+                      title: "¡Pago realizado!",
+                      text: "El pago se realizó correctamente",
+                      icon: "success",
+                      button: "Aceptar",
+                  })
+                  .then(() => {
+                      window.location.href = "/simulacion-pago-pse";
+                  });
               }, 1500);
-            }
-          });
+          }
+      });
       });
     });
   };
