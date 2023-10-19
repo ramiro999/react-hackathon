@@ -20,12 +20,11 @@
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.47.0",
     "react-router-dom": "^6.17.0",
-    "sweetalert2": "^11.6.13",
-    "sweetalert2-react-content": "^5.0.7",
+    "sweetalert": "^2.1.2",
     "tailwindcss": "^3.3.3"
   },
   "devDependencies": {
-    "@types/react": "^17.0.69",
+    "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
     "eslint": "^8.45.0",

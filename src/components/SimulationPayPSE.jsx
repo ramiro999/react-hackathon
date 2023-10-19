@@ -1,6 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
-import Swal from "sweetalert2";
+import swal from "sweetalert";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/logo_extendido.jpeg";
@@ -78,7 +78,7 @@ export default function SimulationPayPSE() {
     requestPaymentToken(true, data.monto).then((res) => {
       makePayment(res["token"], cuentaID, data.monto, "").then((response) => {
         console.log(response);
-          Swal.fire({
+          swal.fire({
             title: "¿Estás seguro?",
             text: "¿Deseas realizar el pago?",
             icon: "warning",
@@ -88,7 +88,7 @@ export default function SimulationPayPSE() {
           }).then((result) => {
             if (result.isConfirmed) {
               setTimeout(() => {
-                Swal.fire({
+                swal.fire({
                   title: "¡Pago realizado!",
                   text: "El pago se realizó correctamente",
                   icon: "success",
