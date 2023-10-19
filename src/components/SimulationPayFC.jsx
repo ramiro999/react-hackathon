@@ -1,8 +1,10 @@
 import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
+import Swal from 'sweetalert2';
 import ReCAPTCHA from "react-google-recaptcha";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import logo from "../assets/img/logo_extendido.jpeg";
 
 export default function SimulationPayFC() {
   const {
@@ -33,9 +35,38 @@ export default function SimulationPayFC() {
     setAllFieldsValid(isValid);
   };
 
+  const handlePayment = () => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "¿Deseas realizar el pago?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setTimeout(() => {
+        Swal.fire({
+          title: "¡Pago realizado!",
+          text: "El pago se realizó correctamente",
+          icon: "success",
+          confirmButtonText: "Aceptar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "/simulacion-pago-fc";
+          }
+        });
+      }, 1500);
+    }
+    });
+  }
+
   return (
     <CardComponent>
       <div className="max-w-md mx-auto p-4 bg-white rounded shadow-md">
+        <div className="mb-3 flex justify-center">
+          <img src={logo} width="100" height="100"  />{" "}
+        </div>
         <h1 className="text-2xl text-center text-white bg-green-700 font-bold mb-4 rounded">
           Pagos FC
         </h1>
@@ -46,7 +77,7 @@ export default function SimulationPayFC() {
             }
           })}>
           <div className="mb-4">
-            <label htmlFor="monto" className="block text-gray-600">
+            <label htmlFor="monto" className="block text-green-600">
               Monto:
             </label>
             <Controller
@@ -137,8 +168,8 @@ export default function SimulationPayFC() {
           <button
             type="submit"
             className="w-full bg-green-700 hover:bg-green-400 text-white font-bold py-2 px-4 rounded"
-            onClick={handleChange}
-            disabled={!allFieldsValid}      
+            disabled={!allFieldsValid}
+            onClick={handlePayment}      
           >
             Realizar Pago
           </button>
