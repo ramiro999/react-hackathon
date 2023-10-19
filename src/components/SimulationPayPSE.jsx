@@ -1,9 +1,11 @@
 import { useForm, Controller } from "react-hook-form";
 import CardComponent from "./CardComponent";
+import Swal from "sweetalert2";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useNavigate, useSearchParams, useLocation  } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
+import logo from "../assets/img/logo_extendido.jpeg";
 
 export default function SimulationPayPSE() {
   const {
@@ -16,78 +18,104 @@ export default function SimulationPayPSE() {
   const [monto, setMonto] = useState("");
 
   const myParam = useLocation().search;
-  const cuentaID= new URLSearchParams(myParam).get("cuentaid");
-  console.log(cuentaID)
+  const cuentaID = new URLSearchParams(myParam).get("cuentaid");
+  console.log(cuentaID);
 
   async function requestPaymentToken(confirm, monto) {
-    const response = await fetch("https://fcpay-production.up.railway.app/token-pay", {
+    const response = await fetch(
+      "https://fcpay-production.up.railway.app/token-pay",
+      {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            confirm: confirm,
-            monto: monto
-        })
-    });
+          confirm: confirm,
+          monto: monto,
+        }),
+      }
+    );
 
     if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     return await response.json();
   }
 
   async function makePayment(token, cuenta_id, monto, ip) {
-    console.log(String(token))
-    const response = await fetch("https://fcpay-production.up.railway.app/pay", {
+    console.log(String(token));
+    const response = await fetch(
+      "https://fcpay-production.up.railway.app/pay",
+      {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            token: String(token),
-            cuenta_id: Number(cuenta_id),
-            monto: Number(monto),
-            ip: ip
-        })
-    });
+          token: String(token),
+          cuenta_id: Number(cuenta_id),
+          monto: Number(monto),
+          ip: ip,
+        }),
+      }
+    );
 
     if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     return await response.json();
-}
-
+  }
 
   const handleFieldValidation = () => {
     // Verificar si todos los campos son válidos
     const isValid = Object.keys(errors).length === 0;
     setAllFieldsValid(isValid);
   };
-  
 
-  const onsubmit = (data,e) => {
+  const onsubmit = (data, e) => {
     e.preventDefault();
     requestPaymentToken(true, data.monto).then((res) => {
-      makePayment(res['token'], cuentaID, data.monto, "").then((response) => {
+      makePayment(res["token"], cuentaID, data.monto, "").then((response) => {
         console.log(response);
+          Swal.fire({
+            title: "¿Estás seguro?",
+            text: "¿Deseas realizar el pago?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí",
+            cancelButtonText: "No",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              setTimeout(() => {
+                Swal.fire({
+                  title: "¡Pago realizado!",
+                  text: "El pago se realizó correctamente",
+                  icon: "success",
+                  confirmButtonText: "Aceptar",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    window.location.href = "/simulacion-pago-pse";
+                  }
+                });
+              }, 1500);
+            }
+          });
       });
     });
-  }
-
+  };
 
   return (
     <CardComponent>
       <div className="max-w-md mx-auto p-4 bg-white rounded shadow-md">
+        <div className="mb-3 flex justify-center">
+          <img src={logo} width="100" height="100"  />{" "}
+        </div>
         <h1 className="text-2xl text-center text-white bg-green-700 font-bold mb-4 rounded">
           Pagos PSE
         </h1>
-        <form
-          onSubmit= {
-            handleSubmit(onsubmit)
-        }>
+        <form onSubmit={handleSubmit(onsubmit)}>
           <div className="mb-4">
             <label htmlFor="monto" className="block text-gray-600">
               Monto:
@@ -171,9 +199,7 @@ export default function SimulationPayPSE() {
             {errors.cvv && <p className="text-red-500">Campo requerido</p>}
           </div>
           <div className="recaptcha mx-10 mb-5">
-            <ReCAPTCHA
-              sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o"
-            />
+            <ReCAPTCHA sitekey="6LcJxq4oAAAAAPCUQ7dWBG_mb-0GaJSExqJG_k4o" />
           </div>
 
           <button
